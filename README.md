@@ -13,6 +13,7 @@ pip install torch torchvision torchaudio --extra-index-url https://download.pyto
 
 3. Edit main.py
 - Line 30: Model yang dipakai (`depan1.pt` untuk kamera depan, `omni1.pt` untuk kamera omni)
+- Line 93 & 94: Atur Fokus Kamera
 - Line 115: Inisialisasi serial, edit COM berapa
 - Line 110 & 111: Seberapa cepat tangkapan metode cadangan (deteksi warna)
 - Line 259: Uncomment untuk serial
@@ -21,3 +22,7 @@ Kedua line ini musti di comment salah satu sesuai kamera yang dipakai
 - Line 245: titik_tengah kamera OMNI
 - Line 246: titik_tengah kamera depan
 
+4. Running program
+```sh
+python main.py
+```
