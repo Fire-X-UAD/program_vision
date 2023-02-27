@@ -1,6 +1,7 @@
 # program_vision
 
 ## Cara Pakai
+0. Clone project
 1. Install requirements.txt
 ```py
 pip install -r requirements.txt
