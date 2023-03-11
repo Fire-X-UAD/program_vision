@@ -5,6 +5,7 @@ from time import time
 from ultralytics import YOLO
 import math
 import serial
+import threading
 
 from supervision.draw.color import ColorPalette
 from supervision.tools.detections import Detections, BoxAnnotator
@@ -26,10 +27,8 @@ class ObjectDetection:
         self.box_annotator = BoxAnnotator(color=ColorPalette(), thickness=2, text_thickness=2, text_scale=0.7)
 
     def load_model(self):
-
         model = YOLO(".\\omni1.pt")  # load a pretrained YOLOv8n model
         model.fuse()
-
         return model
 
     def predict(self, frame):
@@ -89,7 +88,7 @@ class ObjectDetection:
 
         # cap = cv2.VideoCapture(self.capture_index)
 
-        cap = cv2.VideoCapture(1, cv2.CAP_DSHOW)
+        cap = cv2.VideoCapture(self.capture_index, cv2.CAP_DSHOW)
         # cap.set(cv2.CAP_PROP_AUTOFOCUS, 0)
         # cap.set(cv2.CAP_PROP_FOCUS, 70)
 
@@ -233,7 +232,7 @@ class ObjectDetection:
 
                 else: # Bola tidak terdeteksi
                     buffered_frames += 1
-                    if buffered_frames > 5:
+                    if buffered_frames > 10:
                         last_box = None
                         buffer_x1 = None
                         buffer_y1 = None
@@ -242,8 +241,10 @@ class ObjectDetection:
                         posisi_bola = (None, None)
 
             if posisi_bola[0] is not None and posisi_bola[1] is not None:
-                # titik_tengah = (int(frame.shape[1] / 2), int(frame.shape[0] / 2))
-                titik_tengah = (int(frame.shape[1] / 2), int(frame.shape[0]))
+                if self.capture_index == 1:
+                    titik_tengah = (int(frame.shape[1] / 2), int(frame.shape[0] / 2))
+                else:
+                    titik_tengah = (int(frame.shape[1] / 2), int(frame.shape[0]))
                 cv2.line(combined_img, titik_tengah, (posisi_bola[0], posisi_bola[1]), (0, 255, 0), 2, cv2.LINE_AA)
                 # count angle from posisi_bola to titik_tengah 
                 angle = int(math.atan2(titik_tengah[1] - posisi_bola[1], titik_tengah[0] - posisi_bola[0]) * 180 / math.pi)
@@ -251,14 +252,14 @@ class ObjectDetection:
                 # offset angle by -90 degrees without negative values
                 angle = angle - 90 if angle > 90 else angle + 270
 
-                # show angle to screen
+                # show angle to screen+
                 cv2.putText(combined_img, str(angle), (10, 300), font, 3, (0, 255, 0), 2, cv2.LINE_AA)
             else:
                 angle = -1
 
             # ser.write(str(angle).encode()+b"\n")
 
-            cv2.imshow('YOLOv8 Detection', combined_img)
+            cv2.imshow(f'YOLOv8 Detection kamera {self.capture_index}', combined_img)
             if cv2.waitKey(5) & 0xFF == 27:
                 break
         cap.release()
@@ -266,4 +267,7 @@ class ObjectDetection:
 
 
 detector = ObjectDetection(capture_index=1)
-detector()
+detector2 = ObjectDetection(capture_index=2)
+x = threading.Thread(target=detector)
+x.start()
+detector2()
