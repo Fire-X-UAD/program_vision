@@ -27,13 +27,13 @@ class ObjectDetection:
         self.box_annotator = BoxAnnotator(color=ColorPalette(), thickness=2, text_thickness=2, text_scale=0.7)
 
     def load_model(self):
-        model = YOLO(".\\omni1.pt")  # load a pretrained YOLOv8n model
+        model = YOLO("best.pt")  # load a pretrained YOLOv8n model
         model.fuse()
         return model
 
     def predict(self, frame):
 
-        results = self.model(frame, iou=0.5, conf=0.25)
+        results = self.model(frame, iou=0.2, conf=0.6)
 
         return results
 
@@ -93,8 +93,8 @@ class ObjectDetection:
         # cap.set(cv2.CAP_PROP_FOCUS, 70)
 
         assert cap.isOpened()
-        cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
-        cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 360)
+        cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
+        cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
 
         font = cv2.FONT_HERSHEY_SIMPLEX
 
@@ -111,7 +111,8 @@ class ObjectDetection:
 
         posisi_bola = (None, None)
 
-        # ser = serial.Serial('COM10', 9600, timeout=0, parity=serial.PARITY_NONE, rtscts=1)
+        ser = serial.Serial('COM101', 9600, timeout=0, parity=serial.PARITY_NONE, rtscts=1)
+        
 
         while True:
             start_time = time()
@@ -128,6 +129,17 @@ class ObjectDetection:
             cv2.putText(combined_img, f'FPS: {int(fps)}', (20, 70), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (0, 255, 0), 2)
 
             boxes, scores, class_ids = self.extract_data(results)
+            new_boxes = []
+            new_scores = []
+            new_classids = []
+
+            for i, v in enumerate(class_ids):
+                if v == 0:
+                    new_boxes.append(boxes[i])
+                    new_scores.append(scores[i])
+                    new_classids.append(class_ids[i])
+
+            # boxes, scores, class_ids = new_boxes.copy(), new_scores.copy(), new_classids.copy()
 
             # Search the highest score from the detected objects
             max_score = 0
@@ -241,10 +253,10 @@ class ObjectDetection:
                         posisi_bola = (None, None)
 
             if posisi_bola[0] is not None and posisi_bola[1] is not None:
-                if self.capture_index == 1:
-                    titik_tengah = (int(frame.shape[1] / 2), int(frame.shape[0] / 2))
+                if self.capture_index == 999:
+                    titik_tengah = (int(frame.shape[1] / 2), int(frame.shape[0] / 2)) # omni
                 else:
-                    titik_tengah = (int(frame.shape[1] / 2), int(frame.shape[0]))
+                    titik_tengah = (int(frame.shape[1] / 2), int(frame.shape[0])) # depan
                 cv2.line(combined_img, titik_tengah, (posisi_bola[0], posisi_bola[1]), (0, 255, 0), 2, cv2.LINE_AA)
                 # count angle from posisi_bola to titik_tengah 
                 angle = int(math.atan2(titik_tengah[1] - posisi_bola[1], titik_tengah[0] - posisi_bola[0]) * 180 / math.pi)
@@ -257,7 +269,7 @@ class ObjectDetection:
             else:
                 angle = -1
 
-            # ser.write(str(angle).encode()+b"\n")
+            ser.write(str(angle).encode()+b"\n")
 
             cv2.imshow(f'YOLOv8 Detection kamera {self.capture_index}', combined_img)
             if cv2.waitKey(5) & 0xFF == 27:
@@ -266,8 +278,8 @@ class ObjectDetection:
         cv2.destroyAllWindows()
 
 
-detector = ObjectDetection(capture_index=1)
-detector2 = ObjectDetection(capture_index=2)
+detector = ObjectDetection(capture_index=0)
+# detector2 = ObjectDetection(capture_index=2)
 x = threading.Thread(target=detector)
 x.start()
-detector2()
+# detector2()

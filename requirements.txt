@@ -1,4 +1,5 @@
 ultralytics~=8.0.32
-numpy~=1.24.2
+numpy
 opencv-python~=4.7.0.68
 supervision~=0.1.0
+serial
