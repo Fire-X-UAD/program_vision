@@ -27,13 +27,13 @@ class ObjectDetection:
         self.box_annotator = BoxAnnotator(color=ColorPalette(), thickness=2, text_thickness=2, text_scale=0.7)
 
     def load_model(self):
-        model = YOLO(".\\omni1.pt")  # load a pretrained YOLOv8n model
+        model = YOLO(".\\best.pt")  # load a pretrained YOLOv8n model
         model.fuse()
         return model
 
     def predict(self, frame):
 
-        results = self.model(frame, iou=0.5, conf=0.25)
+        results = self.model(frame, iou=0.2, conf=0.65)
 
         return results
 
@@ -93,8 +93,8 @@ class ObjectDetection:
         # cap.set(cv2.CAP_PROP_FOCUS, 70)
 
         assert cap.isOpened()
-        cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
-        cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 360)
+        # cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
+        # cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 360)
 
         font = cv2.FONT_HERSHEY_SIMPLEX
 
@@ -267,7 +267,7 @@ class ObjectDetection:
 
 
 detector = ObjectDetection(capture_index=1)
-detector2 = ObjectDetection(capture_index=2)
+# detector2 = ObjectDetection(capture_index=2)
 x = threading.Thread(target=detector)
 x.start()
-detector2()
+# detector2()
